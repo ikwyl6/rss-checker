@@ -9,7 +9,7 @@ You can add rss feeds to the script/db so you can track that feed for new rss li
 This would be good for a cronjob that you can run to email you the new articles in the rss feed.
 
 ### Command line options:
-<code>
+```
 Adding a feed:
   -t: feed title
   -l: feed url/link
@@ -18,7 +18,7 @@ Running script:
   no options: Checks all rss feeds in db and sees if there are any new links added
   -f: temporary file location to write to disk instead of stdout
   -h: output html links within script output for clickable links for sending in an email
-</code>
+```
 
 ### Initial Usage:
 <code>rss-checker.py -t 'Feed title' -l 'https://link.to.my.feed.url'</code>
