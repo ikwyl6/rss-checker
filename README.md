@@ -11,13 +11,16 @@ This would be good for a cronjob that you can run to email you the new articles 
 ### Command line options:
 ```
 Adding a feed:
-  -t: feed title
-  -l: feed url/link
+  [-t | --title] TITLE: Add a feed title
+  [-l | --link] LINK: Add a feed url/link
 
 Running script:
   no options: Checks all rss feeds in db and sees if there are any new links added
-  -f: temporary file location to write to disk instead of stdout
-  -h: output html links within script output for clickable links for sending in an email
+  [-o | --output] TMP_FILE: temporary file location to write to disk instead of stdout
+  -n | --no-update: Don't update the feed with a time stamp
+  [-f | --feed-id] FEED_ID: Only use or check this feed id
+  --html: output html links within script output for clickable links for sending in an email
+  --list: List all feeds
 ```
 
 ### Initial Usage:
@@ -26,5 +29,9 @@ Running script:
 ### Usage:
 <code>$ rss-checker.py</code> to check for any new rss items that are in the feed compared to the last update from the feed url. The default is to write to stdout.
 
+<code>$ rss-checker.py --list</code> List all feeds with id
+
+<code>$ rss-checker.py --list -f3</code> List only feed with feed_id = 3
+
 ### Cron usage (example):
-<code>$ rss-checker.py -f /tmp/rss.txt; sed -i 's/$/<br>/' && mutt -e 'set content_type=text/html' -s "test rss-checker output " EMAIL_ADD < /tmp/rss.txt
+<code>$ rss-checker.py -o /tmp/rss.txt; sed -i 's/$/<br>/' && mutt -e 'set content_type=text/html' -s "test rss-checker output " EMAIL_ADD < /tmp/rss.txt
