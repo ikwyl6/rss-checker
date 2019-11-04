@@ -21,8 +21,16 @@ class db:
         self.cursor.connection.close()
 
     # get all rss feeds from db
-    def get_all_feeds(self):
-        self.cursor.execute("SELECT * FROM " + self.feed_table + ";")
+    def get_all_feeds(self, **kwargs):
+        feed_id = kwargs.get('feed_id', None)
+        if (feed_id): 
+            sql = "SELECT * FROM " + self.feed_table + " WHERE id = '" + feed_id + "';"
+        else: sql = "SELECT * FROM " + self.feed_table + ";"
+        self.cursor.execute(sql, )
+        return self.cursor.fetchall()
+
+    def get_feed(self, feed_id):
+        self.cursor.execute("SELECT * FROM " + self.feed_table + " WHERE id = " + feed_id + ";")
         return self.cursor.fetchall()
 
     # Add feed/link to feed_table
