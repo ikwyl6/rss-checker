@@ -22,9 +22,17 @@ Running script:
   --html: output html links within script output for clickable links for sending in an email
   --list: List all feeds
 ```
+### Database setup:
+Run as root under mysql: 
+```
+CREATE USER rss_checker@localhost IDENTIFIED BY 'password';
+GRANT ALL ON rss_checker.* TO rss_checker@localhost;
+```
+Logout as root from mysql and then run:
+```$ mysql -u rss_checker -p < rss-checker.sql```
 
 ### Initial Usage:
-<code>rss-checker.py -t 'Feed title' -l 'https://link.to.my.feed.url'</code>
+<code>$ rss-checker.py -t 'Feed title' -l 'https://link.to.my.feed.url'</code>
 
 ### Usage:
 <code>$ rss-checker.py</code> to check for any new rss items that are in the feed compared to the last update from the feed url. The default is to write to stdout.
