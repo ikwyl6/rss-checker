@@ -17,7 +17,7 @@ Adding a feed:
 Running script:
   no options: Checks all rss feeds in db and sees if there are any new links added
   [-o | --output] TMP_FILE: temporary file location to write to disk instead of stdout
-  -n | --no-update: Don't update the feed with a time stamp
+  [-n | --no-update]: Don't update the feed with a time stamp
   [-f | --feed-id] FEED_ID: Only use or check this feed id
   --html: output html links within script output for clickable links for sending in an email
   --list: List all feeds
