@@ -12,15 +12,15 @@ This would be good for a cronjob that you can run to email you the new articles 
 ```
 Adding a feed:
   [-t | --title] TITLE: Add a feed title
-  [-l | --link] LINK: Add a feed url/link
+  [-u | --url] LINK: Add a feed url/link
 
 Running script:
   no options: Checks all rss feeds in db and sees if there are any new links added
   [-o | --output] TMP_FILE: temporary file location to write to disk instead of stdout
   [-n | --no-update]: Don't update the feed with a time stamp
   [-f | --feed-id] FEED_ID: Only use or check this feed id
+  [-l | --list]: List all feeds
   --html: output html links within script output for clickable links for sending in an email
-  --list: List all feeds
 ```
 ### Database setup:
 Run as root under mysql: 
