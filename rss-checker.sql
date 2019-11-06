@@ -4,6 +4,8 @@ GRANT ALL ON rss_checker.* TO rss_checker@localhost;
 */
 
 /* Run as rss_checker */
+CREATE DATABASE rss_checker;
+USE rss_checker; 
 CREATE TABLE feed (\
 	id INT PRIMARY KEY NOT NULL auto_increment, \
 	title VARCHAR(500), \
