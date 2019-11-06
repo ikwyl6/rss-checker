@@ -34,8 +34,8 @@ class db:
         return self.cursor.fetchall()
 
     # Add feed/link to feed_table
-    def add_feed(self,feed):
-        sql ="INSERT INTO " + self.feed_table + " (title,url,updated) VALUES ('%s', '%s', '%s')" 
+    def add_feed(self,feed_title, feed_url, feed_ts):
+        sql ="INSERT INTO " + self.feed_table + " (title,url,updated) VALUES ('" + feed_title + "', '" + feed_url + "', '" + feed_ts + "')" 
         self.cursor.execute(sql, )
         self.con.commit()
     
