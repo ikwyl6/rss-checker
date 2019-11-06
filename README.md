@@ -13,7 +13,7 @@ This would be good for a cronjob that you can run to email you the new articles 
 Adding a feed:
   [-t | --title] TITLE: Add a feed title
   [-u | --url] LINK: Add a feed url/link
-  NOTE: You can add a feed with just a <code>--url</code> and no <code>--title</code>
+  NOTE: You can add a feed with just a --url and no --title
 
 Running script:
   no options: Checks all rss feeds in db and sees if there are any new links added
