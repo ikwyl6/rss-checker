@@ -9,7 +9,7 @@ from time import mktime
 from Database import db
 
 # Database credentials
-dbc = "localhost", "rss_checker", "rsscraigvvg", "rss_checker"
+dbc = "localhost", "DB-USER", "DB-PASS", "DB-NAME"
 db_feed_table = "feed" # table that holds all feed urls
 item_dts = [] # empty datetime object to keep oldest dt for feed.updated
 
