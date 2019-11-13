@@ -26,9 +26,7 @@ clp.add_argument('-l', '--list', action='store_true', help='List all Feeds')
 clp.add_argument('--html', action='store_true', help='Output rss list in simple html')
 clargs = clp.parse_args()
 
-#print (clargs)
-
-if (clargs.title and clargs.url):
+if (clargs.title and clargs.url) or (clargs.url):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with db(dbc, db_feed_table) as db_add:
        db_add.add_feed(clargs.title, clargs.url, ts)
