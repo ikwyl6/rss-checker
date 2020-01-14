@@ -21,6 +21,7 @@ Running script:
   [-n | --no-update]: Don't update the feed with a time stamp
   [-f | --feed-id] FEED_ID: Only use or check this feed id
   [-l | --list]: List all feeds
+  [-c | --comments]: Provide link to rss item comments if available
   --html: output html links within script output for clickable links for sending in an email
 ```
 ### Database setup:
