@@ -36,6 +36,7 @@ class db:
     # Add feed/link to feed_table
     def add_feed(self,feed_title, feed_url, feed_ts):
         if (feed_title is None): feed_title = ""
+        feed_title = feed_title.replace("'", "''")
         sql ="INSERT INTO " + self.feed_table + " (title,url,updated) VALUES ('" + feed_title + "', '" + feed_url + "', '" + feed_ts + "')" 
         self.cursor.execute(sql, )
         self.con.commit()
