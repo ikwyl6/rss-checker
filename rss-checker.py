@@ -5,7 +5,9 @@
 # Author: ikwyl6@protonmail.com
 #
 import argparse,sys,feedparser,datetime
-from time import mktime
+from time import mktime,time
+import time
+
 from Database import db
 
 # Database credentials
@@ -47,14 +49,20 @@ with db(dbc, db_feed_table) as db:
             clargs.no_update=True
             print ("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + str(db_feed_dt) + ")")
         else:                
-            #print ("---------------------------------------------------")
-            print ("Feed: " + db_feed_title + ", " + db_feed_url) 
+            if (clargs.html): print (db_feed_title + "<br>")
+            else: print (db_feed_title) 
             item_dts.clear()
             f = feedparser.parse(db_feed_url)
-            # With each rss item, convert the published date to a ts and 
-            # see if any links are newer than the last time 
+            # With each rss item, convert the published date to a timestamp and 
+            # see if any links are newer than the db_feed_dt timestamp 
             for item in f.entries:
-                item_dt = datetime.datetime.fromtimestamp(mktime(item.published_parsed))
+                # See issue# 151 https://github.com/kurtmckee/feedparser/issues/151
+                try:
+                    item_dt = datetime.datetime.fromtimestamp(mktime(item.updated_parsed))
+                except (KeyError,AttributeError):
+                    item_dt = datetime.datetime.fromtimestamp(time.time())
+                # If the rss item timestamp is greater than the feed timestamp in db
+                # Add that item ts to the item_dts list to sort later
                 if (item_dt > db_feed_dt):
                     if (clargs.html): print (link_html((item.link,item.title,item_dt)))
                     else: 
@@ -62,11 +70,14 @@ with db(dbc, db_feed_table) as db:
                         #print ("  -{:30.30}, {} ({:19})".format(str(item.title), item.link, str(item_dt))) 
                     item_dts.append(item_dt) # list of datetime stamps to update the feed.updated field
                     item_list = [item.title, item.link, item_dt]
-                # item_dts may be empty if no new rss items
-                try:
-                    max_dt = max(item_dts) 
-                    if (not clargs.no_update): db.update_feed_dt(db_feed_id, max_dt)
-                except ValueError:
-                    print ("No new items")
-            print ("---------------------------------------------------")
-     
+            # item_dts may be empty if no new rss items
+            try:
+                max_dt = max(item_dts) 
+                if (not clargs.no_update): db.update_feed_dt(db_feed_id, max_dt)
+            except ValueError:
+                if (clargs.html): print ("No new items<br>")
+                else: print ("No new items")
+            if (clargs.html): print ("---------------------------------------------------<br>")
+            else: print ("---------------------------------------------------")
+ 
+ 
