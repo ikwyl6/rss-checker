@@ -4,10 +4,9 @@
 # with link. Can be used for cron for email
 # Author: ikwyl6@protonmail.com
 #
-import argparse,sys,feedparser,datetime
-from time import mktime,time
+import argparse, sys, feedparser, datetime
+from time import mktime, time
 import time
-
 from Database import db
 
 # Database credentials
@@ -15,9 +14,20 @@ dbc = "localhost", "DB-USER", "DB-PASS", "DB-NAME"
 db_feed_table = "feed" # table that holds all feed urls
 item_dts = [] # empty datetime object to keep oldest dt for feed.updated
 
-def link_html(item):
-    return "- <a href=\""+item[0]+"\">"+item[1]+" ("+str(item[2])+")</a><br>"
+def link_html(item, comment=""):
+    timestamp = item[2]
+    # format for what is/not given
+    if timestamp != "" and not comment:
+        return "- <a href=\""+item[0]+"\">"+item[1]+" ("+str(item[2])+")</a><br>"
+    elif timestamp != "" and comment:
+        return "- <a href=\""+item[0]+"\">"+item[1]+" ("+str(item[2])+")</a>, " + \
+            "<a href=\""+comment+"\">Comments</a><br>"
+    elif timestamp == "" and comment: 
+        return "- <a href=\""+item[0]+"\">"+item[1]+")</a>, " + \
+            "<a href=\""+comment+"\">Comments</a><br>"
+    else: return "- <a href=\""+item[0]+"\">"+item[1]+"</a><br>"
 
+# COMMAND LINE ARGUMENTS
 clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss feeds')
 clp.add_argument('-t', '--title', help='Add feed with title')
 clp.add_argument('-u', '--url', help='Add feed with url')
