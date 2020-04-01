@@ -43,7 +43,7 @@ clargs = clp.parse_args()
 if (clargs.title and clargs.url) or (clargs.url):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with db(dbc, db_feed_table) as db_add:
-       db_add.add_feed(clargs.title, clargs.url, ts)
+        db_add.add_feed(clargs.title, clargs.url, ts)
     exit()
 
 # If output cmdline option is a filename
@@ -66,15 +66,15 @@ with db(dbc, db_feed_table) as db:
     # with each feed from db_feedlist list feeds or print the rss items
     for (db_feed_id, db_feed_title, db_feed_url, db_feed_comments, db_feed_dt) in db_feedlist:
         if (clargs.list):
-            clargs.no_update=True
-            print ("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + str(db_feed_dt) + ")")
-        else:                
-            if (clargs.html): print (db_feed_title + "<br>")
-            else: print (db_feed_title) 
+            clargs.no_update = True
+            print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + str(db_feed_dt) + ")")
+        else:
+            if (clargs.html): print(db_feed_title + "<br>")
+            else: print(db_feed_title)
             item_dts.clear()
             f = feedparser.parse(db_feed_url)
-            # With each rss item, convert the published date to a timestamp and 
-            # see if any links are newer than the db_feed_dt timestamp 
+            # With each rss item, convert the published date to a timestamp and
+            # see if any links are newer than the db_feed_dt timestamp
             for item in f.entries:
                 # See issue# 151 https://github.com/kurtmckee/feedparser/issues/151
                 try:
@@ -92,7 +92,7 @@ with db(dbc, db_feed_table) as db:
                     item_list = [item.title, item.link, item_dt]
             # item_dts may be empty if no new rss items
             try:
-                max_dt = max(item_dts) 
+                max_dt = max(item_dts)
                 if (not clargs.no_update): db.update_feed_dt(db_feed_id, max_dt)
             except ValueError:
                 if (clargs.html): print("No new items<br>")
