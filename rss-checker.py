@@ -63,8 +63,8 @@ with db(dbc, db_feed_table) as db:
     if (clargs.feed_id): db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
     else: db_feedlist = db.get_all_feeds()
     #print (db_feedlist)
-    # with each feed, list feeds or print the rss items 
-    for (db_feed_id,db_feed_title,db_feed_url,db_feed_comments,db_feed_dt) in db_feedlist:
+    # with each feed from db_feedlist list feeds or print the rss items
+    for (db_feed_id, db_feed_title, db_feed_url, db_feed_comments, db_feed_dt) in db_feedlist:
         if (clargs.list):
             clargs.no_update=True
             print ("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + str(db_feed_dt) + ")")
@@ -79,10 +79,10 @@ with db(dbc, db_feed_table) as db:
                 # See issue# 151 https://github.com/kurtmckee/feedparser/issues/151
                 try:
                     item_dt = datetime.datetime.fromtimestamp(mktime(item.updated_parsed))
-                except (KeyError,AttributeError):
+                except (KeyError, AttributeError, OverflowError):
                     item_dt = datetime.datetime.fromtimestamp(time.time())
                 # If the rss item timestamp is greater than the feed timestamp in db
-                # Add that item ts to the item_dts list to sort later
+                # Add that item timestamp to the item_dts list to sort later
                 if (item_dt > db_feed_dt):
                     if (clargs.html): print (link_html((item.link,item.title,item_dt)))
                     else: 
@@ -95,9 +95,7 @@ with db(dbc, db_feed_table) as db:
                 max_dt = max(item_dts) 
                 if (not clargs.no_update): db.update_feed_dt(db_feed_id, max_dt)
             except ValueError:
-                if (clargs.html): print ("No new items<br>")
-                else: print ("No new items")
-            if (clargs.html): print ("---------------------------------------------------<br>")
-            else: print ("---------------------------------------------------")
- 
- 
+                if (clargs.html): print("No new items<br>")
+                else: print("No new items")
+            if (clargs.html): print("---------------------------------------------------<br>")
+            else: print("---------------------------------------------------")
