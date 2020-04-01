@@ -32,12 +32,14 @@ clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss fe
 clp.add_argument('-t', '--title', help='Add feed with title')
 clp.add_argument('-u', '--url', help='Add feed with url')
 clp.add_argument('-o', '--output', help='Output to file')
-clp.add_argument('-n', '--no-update', action='store_true', help='Do not update db time stamp for feed')
+clp.add_argument('-n', '--no-update', action='store_true', help='Do not update db time stamp for feed. Like \'dry-run\'')
 clp.add_argument('-f', '--feed-id', help='Only use or check this feed id')
 clp.add_argument('-l', '--list', action='store_true', help='List all Feeds')
+clp.add_argument('-c', '--comments', action='store_true', help='Show link to feed comments (if available)')
 clp.add_argument('--html', action='store_true', help='Output rss list in simple html')
 clargs = clp.parse_args()
 
+# If 'title' and 'url' then add the link to the db
 if (clargs.title and clargs.url) or (clargs.url):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with db(dbc, db_feed_table) as db_add:
@@ -46,7 +48,15 @@ if (clargs.title and clargs.url) or (clargs.url):
 
 # If output cmdline option is a filename
 if (clargs.output):
-    sys.stdout = open (clargs.output, "w")
+    sys.stdout = open(clargs.output, "w")
+
+# Create the html header for font size etc if --html used
+if (clargs.html):
+    print ("<html><head><style>\
+            p { font-family: Arial, Helvetica, sans-serif; fone-size: small; }\
+            a { text-decoration: none; }\
+            a:hover { text-decoration: underline; }\
+        </style></head>")
 
 # Connect to database and get all feeds
 with db(dbc, db_feed_table) as db:
