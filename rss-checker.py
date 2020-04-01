@@ -84,10 +84,26 @@ with db(dbc, db_feed_table) as db:
                 # If the rss item timestamp is greater than the feed timestamp in db
                 # Add that item timestamp to the item_dts list to sort later
                 if (item_dt > db_feed_dt):
-                    if (clargs.html): print (link_html((item.link,item.title,item_dt)))
-                    else: 
-                        print ("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
-                        #print ("  -{:30.30}, {} ({:19})".format(str(item.title), item.link, str(item_dt))) 
+                    # TODO: do try/except over the item.link as sometimes it
+                    #       is not always present (KeyError)
+                    if (clargs.html):
+                        if (clargs.comments):
+                            try:
+                                print(link_html((item.link, item.title, item_dt), item.comments))
+                            except (AttributeError):
+                                print(link_html((item.link, item.title, item_dt)))
+                        else:
+                            print(link_html((item.link, item.title, item_dt)))
+                    else:
+                        if (clargs.comments):
+                            try:
+                                print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + "),\n   Comments: "+ item.comments + "\n")
+                            except (AttributeError):
+                                print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
+                        else:
+                            print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
+
+
                     item_dts.append(item_dt) # list of datetime stamps to update the feed.updated field
                     item_list = [item.title, item.link, item_dt]
             # item_dts may be empty if no new rss items
