@@ -49,10 +49,10 @@ if (clargs.title and clargs.url) or (clargs.url):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with db(dbc, db_feed_table) as db_add:
         db_add.add_feed(clargs.title, clargs.url, ts)
-    exit()
+    sys.exit()
 
 # If output cmdline option is a filename
-if (clargs.output):
+if clargs.output:
     sys.stdout = open(clargs.output, "w")
 
 # Create the html header for font size etc if --html used
