@@ -4,9 +4,12 @@
 # with link. Can be used for cron for email
 # Author: ikwyl6@protonmail.com
 #
-import argparse, sys, feedparser, datetime
-from time import mktime, time
+import argparse
+import sys
+import datetime
 import time
+from time import mktime, time
+import feedparser
 from Database import db
 
 # Database credentials
@@ -22,10 +25,12 @@ def link_html(item, comment=""):
     elif timestamp != "" and comment:
         return "- <a href=\""+item[0]+"\">"+item[1]+" ("+str(item[2])+")</a>, " + \
             "<a href=\""+comment+"\">Comments</a><br>"
-    elif timestamp == "" and comment: 
+    elif timestamp == "" and comment:
         return "- <a href=\""+item[0]+"\">"+item[1]+")</a>, " + \
             "<a href=\""+comment+"\">Comments</a><br>"
-    else: return "- <a href=\""+item[0]+"\">"+item[1]+"</a><br>"
+    else:
+        return "- <a href=\""+item[0]+"\">"+item[1]+"</a><br>"
+
 
 # COMMAND LINE ARGUMENTS
 clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss feeds')
@@ -60,7 +65,7 @@ if (clargs.html):
 
 # Connect to database and get all feeds
 with db(dbc, db_feed_table) as db:
-    if (clargs.feed_id): db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
+    if clargs.feed_id: db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
     else: db_feedlist = db.get_all_feeds()
     #print (db_feedlist)
     # with each feed from db_feedlist list feeds or print the rss items
@@ -69,8 +74,10 @@ with db(dbc, db_feed_table) as db:
             clargs.no_update = True
             print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + str(db_feed_dt) + ")")
         else:
-            if (clargs.html): print(db_feed_title + "<br>")
-            else: print(db_feed_title)
+            if (clargs.html):
+                print(db_feed_title + "<br>")
+            else:
+                print(db_feed_title)
             item_dts.clear()
             f = feedparser.parse(db_feed_url)
             # With each rss item, convert the published date to a timestamp and
@@ -83,35 +90,35 @@ with db(dbc, db_feed_table) as db:
                     item_dt = datetime.datetime.fromtimestamp(time.time())
                 # If the rss item timestamp is greater than the feed timestamp in db
                 # Add that item timestamp to the item_dts list to sort later
-                if (item_dt > db_feed_dt):
+                if item_dt > db_feed_dt:
                     # TODO: do try/except over the item.link as sometimes it
                     #       is not always present (KeyError)
-                    if (clargs.html):
-                        if (clargs.comments):
+                    if clargs.html:
+                        if clargs.comments:
                             try:
                                 print(link_html((item.link, item.title, item_dt), item.comments))
-                            except (AttributeError):
+                            except AttributeError:
                                 print(link_html((item.link, item.title, item_dt)))
                         else:
                             print(link_html((item.link, item.title, item_dt)))
                     else:
                         if (clargs.comments):
                             try:
-                                print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + "),\n   Comments: "+ item.comments + "\n")
+                                print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + "),\n   Comments: " + item.comments + "\n")
                             except (AttributeError):
                                 print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
                         else:
                             print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
-
-
-                    item_dts.append(item_dt) # list of datetime stamps to update the feed.updated field
+                    item_dts.append(item_dt)  # list of datetime stamps to update the feed.updated field
                     item_list = [item.title, item.link, item_dt]
             # item_dts may be empty if no new rss items
             try:
                 max_dt = max(item_dts)
                 if (not clargs.no_update): db.update_feed_dt(db_feed_id, max_dt)
             except ValueError:
-                if (clargs.html): print("No new items<br>")
-                else: print("No new items")
+                if clargs.html:
+                    print("No new items<br>")
+                else:
+                    print("No new items")
             if (clargs.html): print("---------------------------------------------------<br>")
             else: print("---------------------------------------------------")
