@@ -57,7 +57,12 @@ if clargs.output:
 
 # Create the html header for font size etc if --html used
 if (clargs.html):
-    print ("<html><head><style>\
+    print("<?php\n" + 
+          "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: http://ikwyl6.com/rss-checker/');}\n" +
+        "echo \"<table width=100%><tr><td align=right>" +
+        "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
+
+    print("<html><head><style>\
             p { font-family: Arial, Helvetica, sans-serif; fone-size: small; }\
             a { text-decoration: none; }\
             a:hover { text-decoration: underline; }\
