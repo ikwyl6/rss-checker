@@ -56,11 +56,11 @@ if clargs.output:
     sys.stdout = open(clargs.output, "w")
 
 # Create the html header for font size etc if --html used
-if (clargs.html):
-    print("<?php\n" + 
+if clargs.html:
+    print("<?php\n" +
           "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: http://ikwyl6.com/rss-checker/');}\n" +
-        "echo \"<table width=100%><tr><td align=right>" +
-        "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
+          "echo \"<table width=100%><tr><td align=right>" +
+          "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
 
     print("<html><head><style>\
             p { font-family: Arial, Helvetica, sans-serif; fone-size: small; }\
@@ -70,16 +70,18 @@ if (clargs.html):
 
 # Connect to database and get all feeds
 with db(dbc, db_feed_table) as db:
-    if clargs.feed_id: db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
-    else: db_feedlist = db.get_all_feeds()
-    #print (db_feedlist)
+    if clargs.feed_id:
+        db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
+    else:
+        db_feedlist = db.get_all_feeds()
+    # print (db_feedlist)
     # with each feed from db_feedlist list feeds or print the rss items
     for (db_feed_id, db_feed_title, db_feed_url, db_feed_comments, db_feed_dt) in db_feedlist:
-        if (clargs.list):
+        if clargs.list:
             clargs.no_update = True
             print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + str(db_feed_dt) + ")")
         else:
-            if (clargs.html):
+            if clargs.html:
                 print(db_feed_title + "<br>")
             else:
                 print(db_feed_title)
@@ -110,7 +112,7 @@ with db(dbc, db_feed_table) as db:
                         if (clargs.comments):
                             try:
                                 print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + "),\n   Comments: " + item.comments + "\n")
-                            except (AttributeError):
+                            except AttributeError:
                                 print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
                         else:
                             print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
@@ -119,11 +121,14 @@ with db(dbc, db_feed_table) as db:
             # item_dts may be empty if no new rss items
             try:
                 max_dt = max(item_dts)
-                if (not clargs.no_update): db.update_feed_dt(db_feed_id, max_dt)
+                if not clargs.no_update:
+                    db.update_feed_dt(db_feed_id, max_dt)
             except ValueError:
                 if clargs.html:
                     print("No new items<br>")
                 else:
                     print("No new items")
-            if (clargs.html): print("---------------------------------------------------<br>")
-            else: print("---------------------------------------------------")
+            if clargs.html:
+                print("---------------------------------------------------<br>")
+            else:
+                print("---------------------------------------------------")
