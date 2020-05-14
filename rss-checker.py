@@ -8,14 +8,15 @@ import argparse
 import sys
 import datetime
 import time
-from time import mktime, time
+from time import mktime
 import feedparser
 from Database import db
 
 # Database credentials
 dbc = "localhost", "DB-USER", "DB-PASS", "DB-NAME"
-db_feed_table = "feed" # table that holds all feed urls
-item_dts = [] # empty datetime object to keep oldest dt for feed.updated
+db_feed_table = "feed"  # table that holds all feed urls
+item_dts = []  # empty datetime object to keep oldest dt for feed.updated
+output_str = ""
 
 def link_html(item, comment=""):
     timestamp = item[2]
@@ -36,8 +37,9 @@ def link_html(item, comment=""):
 clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss feeds')
 clp.add_argument('-t', '--title', help='Add feed with title')
 clp.add_argument('-u', '--url', help='Add feed with url')
-clp.add_argument('-o', '--output', help='Output to file')
+clp.add_argument('-o', '--output', help='Output to file. Default is stdout')
 clp.add_argument('-n', '--no-update', action='store_true', help='Do not update db time stamp for feed. Like \'dry-run\'')
+clp.add_argument('-a', '--all-feeds', action='store_true', help='Show all feeds in output even if they don\'t have any new rss items. Default is not to show them')
 clp.add_argument('-f', '--feed-id', help='Only use or check this feed id')
 clp.add_argument('-l', '--list', action='store_true', help='List all Feeds')
 clp.add_argument('-c', '--comments', action='store_true', help='Show link to feed comments (if available)')
@@ -70,6 +72,7 @@ if clargs.html:
 
 # Connect to database and get all feeds
 with db(dbc, db_feed_table) as db:
+    has_new_items = False
     if clargs.feed_id:
         db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
     else:
@@ -82,9 +85,11 @@ with db(dbc, db_feed_table) as db:
             print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + str(db_feed_dt) + ")")
         else:
             if clargs.html:
-                print(db_feed_title + "<br>")
+                output_str = db_feed_title + "<br>"
+                #print(db_feed_title + "<br>")
             else:
-                print(db_feed_title)
+                output_str += db_feed_title + "\n"
+                #print(db_feed_title)
             item_dts.clear()
             f = feedparser.parse(db_feed_url)
             # With each rss item, convert the published date to a timestamp and
@@ -98,24 +103,35 @@ with db(dbc, db_feed_table) as db:
                 # If the rss item timestamp is greater than the feed timestamp in db
                 # Add that item timestamp to the item_dts list to sort later
                 if item_dt > db_feed_dt:
+                    has_new_items = True
                     # TODO: do try/except over the item.link as sometimes it
                     #       is not always present (KeyError)
                     if clargs.html:
                         if clargs.comments:
                             try:
-                                print(link_html((item.link, item.title, item_dt), item.comments))
+                                output_str += link_html((item.link, item.title, item_dt), item.comments)
+                                #print(link_html((item.link, item.title, item_dt), item.comments))
                             except AttributeError:
-                                print(link_html((item.link, item.title, item_dt)))
+                                output_str += link_html(item.link, item.title, item_dt)
+                                #print(link_html((item.link, item.title, item_dt)))
                         else:
-                            print(link_html((item.link, item.title, item_dt)))
+                            output_str += link_html(item.link, item.title, item_dt)
+                            #print(link_html((item.link, item.title, item_dt)))
                     else:
-                        if (clargs.comments):
+                        if clargs.comments:
                             try:
-                                print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + "),\n   Comments: " + item.comments + "\n")
+                                output_str += "  -" + item.title + "\n   " + \
+                                      item.link + " (" + str(item_dt) + \
+                                      "),\n   Comments: " + item.comments + "\n"
+                                #print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + "),\n   Comments: " + item.comments + "\n")
                             except AttributeError:
-                                print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
+                                output_str += "  -" + item.title + "\n   " + \
+                                      item.link + " (" + str(item_dt) + ")\n"
+                                #print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
                         else:
-                            print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
+                            output_str += "  -" + item.title + "\n   " + \
+                                  item.link + " (" + str(item_dt) + ")\n"
+                            #print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
                     item_dts.append(item_dt)  # list of datetime stamps to update the feed.updated field
                     item_list = [item.title, item.link, item_dt]
             # item_dts may be empty if no new rss items
@@ -125,10 +141,20 @@ with db(dbc, db_feed_table) as db:
                     db.update_feed_dt(db_feed_id, max_dt)
             except ValueError:
                 if clargs.html:
-                    print("No new items<br>")
+                    output_str += "No new items<br>"
+                    #print("No new items<br>")
                 else:
-                    print("No new items")
+                    output_str += "No new items\n"
+                    #print("No new items")
             if clargs.html:
-                print("---------------------------------------------------<br>")
+                output_str += "---------------------------------------------------<br>"
             else:
-                print("---------------------------------------------------")
+                output_str += "---------------------------------------------------"
+            # Output the feeds depending if user wants all feeds or not
+            if not clargs.all_feeds and has_new_items:
+               print (output_str)
+            elif not clargs.all_feeds and not has_new_items:
+               pass
+            elif clargs.all_feeds:
+               print(output_str)
+
