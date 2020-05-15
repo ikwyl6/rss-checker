@@ -18,14 +18,17 @@ db_feed_table = "feed"  # table that holds all feed urls
 item_dts = []  # empty datetime object to keep oldest dt for feed.updated
 output_str = ""
 
+
 def link_html(item, comment=""):
     timestamp = item[2]
     # format for what is/not given
     if timestamp != "" and not comment:
-        return "- <a href=\""+item[0]+"\">"+item[1]+" ("+str(item[2])+")</a><br>"
+        return "- <a href=\""+item[0]+"\">"+item[1]+" (" + str(item[2]) + \
+                ")</a><br>"
     elif timestamp != "" and comment:
-        return "- <a href=\""+item[0]+"\">"+item[1]+" ("+str(item[2])+")</a>, " + \
-            "<a href=\""+comment+"\">Comments</a><br>"
+        return "- <a href=\""+item[0]+"\">"+item[1]+" (" + str(item[2]) + \
+                ")</a>, " + \
+                "<a href=\""+comment+"\">Comments</a><br>"
     elif timestamp == "" and comment:
         return "- <a href=\""+item[0]+"\">"+item[1]+")</a>, " + \
             "<a href=\""+comment+"\">Comments</a><br>"
@@ -34,16 +37,22 @@ def link_html(item, comment=""):
 
 
 # COMMAND LINE ARGUMENTS
-clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss feeds')
+clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss \
+        feeds')
 clp.add_argument('-t', '--title', help='Add feed with title')
 clp.add_argument('-u', '--url', help='Add feed with url')
 clp.add_argument('-o', '--output', help='Output to file. Default is stdout')
-clp.add_argument('-n', '--no-update', action='store_true', help='Do not update db time stamp for feed. Like \'dry-run\'')
-clp.add_argument('-a', '--all-feeds', action='store_true', help='Show all feeds in output even if they don\'t have any new rss items. Default is not to show them')
+clp.add_argument('-n', '--no-update', action='store_true', help='Do not \
+        update db time stamp for feed. Like \'dry-run\'')
+clp.add_argument('-a', '--all-feeds', action='store_true', help='Show all \
+        feeds in output even if they don\'t have any new rss items. Default \
+        is not to show them')
 clp.add_argument('-f', '--feed-id', help='Only use or check this feed id')
 clp.add_argument('-l', '--list', action='store_true', help='List all Feeds')
-clp.add_argument('-c', '--comments', action='store_true', help='Show link to feed comments (if available)')
-clp.add_argument('--html', action='store_true', help='Output rss list in simple html')
+clp.add_argument('-c', '--comments', action='store_true', help='Show link to \
+        feed comments (if available)')
+clp.add_argument('--html', action='store_true', help='Output rss list in \
+        simple html')
 clargs = clp.parse_args()
 
 # If 'title' and 'url' then add the link to the db
@@ -60,7 +69,8 @@ if clargs.output:
 # Create the html header for font size etc if --html used
 if clargs.html:
     print("<?php\n" +
-          "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: http://ikwyl6.com/rss-checker/');}\n" +
+          "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: \
+                  http://ikwyl6.com/rss-checker/');}\n" +
           "echo \"<table width=100%><tr><td align=right>" +
           "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
 
@@ -82,7 +92,8 @@ with db(dbc, db_feed_table) as db:
     for (db_feed_id, db_feed_title, db_feed_url, db_feed_comments, db_feed_dt) in db_feedlist:
         if clargs.list:
             clargs.no_update = True
-            print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + str(db_feed_dt) + ")")
+            print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + \
+                    str(db_feed_dt) + ")")
         else:
             if clargs.html:
                 output_str = db_feed_title + "<br>"
@@ -152,9 +163,8 @@ with db(dbc, db_feed_table) as db:
                 output_str += "---------------------------------------------------"
             # Output the feeds depending if user wants all feeds or not
             if not clargs.all_feeds and has_new_items:
-               print (output_str)
+                print(output_str)
             elif not clargs.all_feeds and not has_new_items:
-               pass
+                pass
             elif clargs.all_feeds:
-               print(output_str)
-
+                print(output_str)
