@@ -149,10 +149,8 @@ with db(dbc, db_feed_table) as db:
             except ValueError:
                 if clargs.html:
                     output_str += "No new items<br>"
-                    # print("No new items<br>")
                 else:
                     output_str += "No new items\n"
-                    # print("No new items")
             if clargs.html:
                 output_str += "<hr>"
             else:
