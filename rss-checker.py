@@ -82,7 +82,6 @@ if clargs.html:
 
 # Connect to database and get all feeds
 with db(dbc, db_feed_table) as db:
-    has_new_items = False
     if clargs.feed_id:
         db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
     else:
@@ -90,17 +89,19 @@ with db(dbc, db_feed_table) as db:
     # print (db_feedlist)
     # with each feed from db_feedlist list feeds or print the rss items
     for (db_feed_id, db_feed_title, db_feed_url, db_feed_comments, db_feed_dt) in db_feedlist:
+        output_str = ""
+        has_new_items = False
         if clargs.list:
             clargs.no_update = True
             print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + \
                     str(db_feed_dt) + ")")
         else:
             if clargs.html:
-                output_str = db_feed_title + "<br>"
-                #print(db_feed_title + "<br>")
+                output_str += db_feed_title + "<br>"
+                # print(db_feed_title + "<br>")
             else:
                 output_str += db_feed_title + "\n"
-                #print(db_feed_title)
+                # print(db_feed_title)
             item_dts.clear()
             f = feedparser.parse(db_feed_url)
             # With each rss item, convert the published date to a timestamp and
@@ -121,29 +122,24 @@ with db(dbc, db_feed_table) as db:
                         if clargs.comments:
                             try:
                                 output_str += link_html((item.link, item.title, item_dt), item.comments)
-                                #print(link_html((item.link, item.title, item_dt), item.comments))
                             except AttributeError:
-                                output_str += link_html(item.link, item.title, item_dt)
-                                #print(link_html((item.link, item.title, item_dt)))
+                                output_str += link_html((item.link, item.title, item_dt))
                         else:
-                            output_str += link_html(item.link, item.title, item_dt)
-                            #print(link_html((item.link, item.title, item_dt)))
+                            output_str += link_html((item.link, item.title, item_dt))
                     else:
                         if clargs.comments:
                             try:
                                 output_str += "  -" + item.title + "\n   " + \
                                       item.link + " (" + str(item_dt) + \
                                       "),\n   Comments: " + item.comments + "\n"
-                                #print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + "),\n   Comments: " + item.comments + "\n")
                             except AttributeError:
                                 output_str += "  -" + item.title + "\n   " + \
                                       item.link + " (" + str(item_dt) + ")\n"
-                                #print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
                         else:
                             output_str += "  -" + item.title + "\n   " + \
                                   item.link + " (" + str(item_dt) + ")\n"
-                            #print("  -" + item.title + "\n   " + item.link + " (" + str(item_dt) + ")\n")
-                    item_dts.append(item_dt)  # list of datetime stamps to update the feed.updated field
+                    # list of datetime stamps to update the feed.updated field
+                    item_dts.append(item_dt)
                     item_list = [item.title, item.link, item_dt]
             # item_dts may be empty if no new rss items
             try:
@@ -153,12 +149,12 @@ with db(dbc, db_feed_table) as db:
             except ValueError:
                 if clargs.html:
                     output_str += "No new items<br>"
-                    #print("No new items<br>")
+                    # print("No new items<br>")
                 else:
                     output_str += "No new items\n"
-                    #print("No new items")
+                    # print("No new items")
             if clargs.html:
-                output_str += "---------------------------------------------------<br>"
+                output_str += "<hr>"
             else:
                 output_str += "---------------------------------------------------"
             # Output the feeds depending if user wants all feeds or not
