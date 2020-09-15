@@ -64,7 +64,11 @@ if (clargs.title and clargs.url) or (clargs.url):
 
 # If output cmdline option is a filename
 if clargs.output:
-    sys.stdout = open(clargs.output, "w")
+    try:
+        sys.stdout = open(clargs.output, "w")
+    except FileNotFoundError:
+        print("No such file or directory'" + clargs.output + "'. Exiting")
+        exit()
 
 # Create the html header for font size etc if --html used
 if clargs.html:
