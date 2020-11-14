@@ -58,8 +58,12 @@ clargs = clp.parse_args()
 # If 'title' and 'url' then add the link to the db
 if (clargs.title and clargs.url) or (clargs.url):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    with db(dbc, db_feed_table) as db_add:
-        db_add.add_feed(clargs.title, clargs.url, ts)
+    try:
+        with db(dbc, db_feed_table) as db_add:
+            db_add.add_feed(clargs.title, clargs.url, ts)
+    except MySQLdb._exceptions.OperationalError:
+        print ("No mysql server connection found. Exiting.")
+        sys.exit()
     sys.exit()
 
 # If output cmdline option is a filename
@@ -90,68 +94,84 @@ try:
         if clargs.feed_id:
             db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
         else:
-            if clargs.html:
-                output_str += db_feed_title + "<br>"
-                # print(db_feed_title + "<br>")
+            db_feedlist = db.get_all_feeds()
+        # print (db_feedlist)
+        # with each feed from db_feedlist list feeds or print the rss items
+        for (db_feed_id, db_feed_title, db_feed_url, 
+                db_feed_comments, db_feed_dt) in db_feedlist:
+            output_str = ""
+            has_new_items = False
+            if clargs.list:
+                clargs.no_update = True
+                print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" +
+                    str(db_feed_dt) + ")")
             else:
-                output_str += db_feed_title + "\n"
-                # print(db_feed_title)
-            item_dts.clear()
-            f = feedparser.parse(db_feed_url)
-            # With each rss item, convert the published date to a timestamp and
-            # see if any links are newer than the db_feed_dt timestamp
-            for item in f.entries:
-                # See issue# 151 https://github.com/kurtmckee/feedparser/issues/151
-                try:
-                    item_dt = datetime.datetime.fromtimestamp(mktime(item.updated_parsed))
-                except (KeyError, AttributeError, OverflowError):
-                    item_dt = datetime.datetime.fromtimestamp(time.time())
-                # If the rss item timestamp is greater than the feed timestamp in db
-                # Add that item timestamp to the item_dts list to sort later
-                if item_dt > db_feed_dt:
-                    has_new_items = True
-                    # TODO: do try/except over the item.link as sometimes it
-                    #       is not always present (KeyError)
-                    if clargs.html:
-                        if clargs.comments:
-                            try:
-                                output_str += link_html((item.link, item.title, item_dt), item.comments)
-                            except AttributeError:
+                if clargs.html:
+                    output_str += db_feed_title + "<br>"
+                    # print(db_feed_title + "<br>")
+                else:
+                    output_str += db_feed_title + "\n"
+                    # print(db_feed_title)
+                item_dts.clear()
+                f = feedparser.parse(db_feed_url)
+                # With each rss item, convert the published date to a timestamp and
+                # see if any links are newer than the db_feed_dt timestamp
+                for item in f.entries:
+                    # See issue# 151 https://github.com/kurtmckee/feedparser/issues/151
+                    try:
+                        item_dt = datetime.datetime.fromtimestamp(mktime(item.updated_parsed))
+                    except (KeyError, AttributeError, OverflowError):
+                        item_dt = datetime.datetime.fromtimestamp(time.time())
+                    # If the rss item timestamp is greater than the feed timestamp in db
+                    # Add that item timestamp to the item_dts list to sort later
+                    if item_dt > db_feed_dt:
+                        has_new_items = True
+                        # TODO: do try/except over the item.link as sometimes it
+                        #       is not always present (KeyError)
+                        if clargs.html:
+                            if clargs.comments:
+                                try:
+                                    output_str += link_html((item.link, item.title, item_dt), item.comments)
+                                except AttributeError:
+                                    output_str += link_html((item.link, item.title, item_dt))
+                            else:
                                 output_str += link_html((item.link, item.title, item_dt))
                         else:
-                            output_str += link_html((item.link, item.title, item_dt))
-                    else:
-                        if clargs.comments:
-                            try:
-                                output_str += "  -" + item.title + "\n   " + \
-                                      item.link + " (" + str(item_dt) + \
-                                      "),\n   Comments: " + item.comments + "\n"
-                            except AttributeError:
+                            if clargs.comments:
+                                try:
+                                    output_str += "  -" + item.title + "\n   " + \
+                                          item.link + " (" + str(item_dt) + \
+                                          "),\n   Comments: " + item.comments + "\n"
+                                except AttributeError:
+                                    output_str += "  -" + item.title + "\n   " + \
+                                          item.link + " (" + str(item_dt) + ")\n"
+                            else:
                                 output_str += "  -" + item.title + "\n   " + \
                                       item.link + " (" + str(item_dt) + ")\n"
-                        else:
-                            output_str += "  -" + item.title + "\n   " + \
-                                  item.link + " (" + str(item_dt) + ")\n"
-                    # list of datetime stamps to update the feed.updated field
-                    item_dts.append(item_dt)
-                    item_list = [item.title, item.link, item_dt]
-            # item_dts may be empty if no new rss items
-            try:
-                max_dt = max(item_dts)
-                if not clargs.no_update:
-                    db.update_feed_dt(db_feed_id, max_dt)
-            except ValueError:
+                        # list of datetime stamps to update the feed.updated field
+                        item_dts.append(item_dt)
+                        item_list = [item.title, item.link, item_dt]
+                # item_dts may be empty if no new rss items
+                try:
+                    max_dt = max(item_dts)
+                    if not clargs.no_update:
+                        db.update_feed_dt(db_feed_id, max_dt)
+                except ValueError:
+                    if clargs.html:
+                        output_str += "No new items<br>"
+                    else:
+                        output_str += "No new items\n"
                 if clargs.html:
-                    output_str += "No new items<br>"
+                    output_str += "<hr>"
                 else:
                     output_str += "---------------------------------------------------"
                 # Output the feeds depending if user wants all feeds or not
                 if not clargs.all_feeds and has_new_items:
-                    print(output_str)
+                    print (output_str)
                 elif not clargs.all_feeds and not has_new_items:
                     pass
                 elif clargs.all_feeds:
-                    print(output_str)
+                    print (output_str)
 except MySQLdb._exceptions.OperationalError:
     print ("No mysql server connection found. Exiting.")
     exit()
