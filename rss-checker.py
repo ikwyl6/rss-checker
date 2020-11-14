@@ -85,20 +85,10 @@ if clargs.html:
         </style></head>")
 
 # Connect to database and get all feeds
-with db(dbc, db_feed_table) as db:
-    if clargs.feed_id:
-        db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
-    else:
-        db_feedlist = db.get_all_feeds()
-    # print (db_feedlist)
-    # with each feed from db_feedlist list feeds or print the rss items
-    for (db_feed_id, db_feed_title, db_feed_url, db_feed_comments, db_feed_dt) in db_feedlist:
-        output_str = ""
-        has_new_items = False
-        if clargs.list:
-            clargs.no_update = True
-            print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" + \
-                    str(db_feed_dt) + ")")
+try:
+    with db(dbc, db_feed_table) as db:
+        if clargs.feed_id:
+            db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
         else:
             if clargs.html:
                 output_str += db_feed_title + "<br>"
@@ -154,15 +144,14 @@ with db(dbc, db_feed_table) as db:
                 if clargs.html:
                     output_str += "No new items<br>"
                 else:
-                    output_str += "No new items\n"
-            if clargs.html:
-                output_str += "<hr>"
-            else:
-                output_str += "---------------------------------------------------"
-            # Output the feeds depending if user wants all feeds or not
-            if not clargs.all_feeds and has_new_items:
-                print(output_str)
-            elif not clargs.all_feeds and not has_new_items:
-                pass
-            elif clargs.all_feeds:
-                print(output_str)
+                    output_str += "---------------------------------------------------"
+                # Output the feeds depending if user wants all feeds or not
+                if not clargs.all_feeds and has_new_items:
+                    print(output_str)
+                elif not clargs.all_feeds and not has_new_items:
+                    pass
+                elif clargs.all_feeds:
+                    print(output_str)
+except MySQLdb._exceptions.OperationalError:
+    print ("No mysql server connection found. Exiting.")
+    exit()
