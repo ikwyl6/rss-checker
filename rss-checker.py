@@ -11,6 +11,7 @@ import time
 from time import mktime
 import feedparser
 from Database import db
+from Database import OperationalError
 
 # Database credentials
 dbc = "localhost", "DB-USER", "DB-PASS", "DB-NAME"
