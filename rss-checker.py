@@ -172,6 +172,6 @@ try:
                     pass
                 elif clargs.all_feeds:
                     print (output_str)
-except MySQLdb._exceptions.OperationalError:
+except OperationalError:
     print ("No mysql server connection found. Exiting.")
     exit()
