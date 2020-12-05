@@ -1,6 +1,7 @@
 #!/bin/python
 
 import MySQLdb as mysql
+from MySQLdb import OperationalError
 
 class db:
 
