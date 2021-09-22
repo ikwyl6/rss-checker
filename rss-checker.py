@@ -85,7 +85,10 @@ if clargs.html:
           "echo \"<table width=100%><tr><td align=right>" +
           "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
 
-    print("<html><head><style>\
+    print("<html><head>\
+           <link rel=\"shortcut icon\" type=\"image/png\" href=\"favicon.png\">\
+            <style>\
+            body { -webkit-text-size-adjust: 300%; }\
             p { font-family: Arial, Helvetica, sans-serif; fone-size: small; }\
             a { text-decoration: none; }\
             a:hover { text-decoration: underline; }\
