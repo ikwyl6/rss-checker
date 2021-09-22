@@ -10,6 +10,7 @@ import datetime
 import time
 from time import mktime
 import feedparser
+import requests
 from urllib.error import URLError
 from Database import db
 from Database import OperationalError
@@ -116,10 +117,15 @@ try:
                     # print(db_feed_title)
                 item_dts.clear()
                 try:
-                    f = feedparser.parse(db_feed_url)
-                except URLError as e:
-                    print("feedparser error: {0} using {1}".format(e.reason,
-                        db_feed_url))
+                    response = requests.get(db_feed_url, timeout=1.0)
+                    f = feedparser.parse(response.text) #db_feed_url)
+                except (URLError,
+                    requests.exceptions.ConnectionError,
+                    requests.exceptions.SSLError) as e:
+                    print(e)
+                    continue
+                except requests.exceptions.Timeout as e:
+                    print("Timeout from {0}. {1}".format(db_feed_url, e))
                     continue
                 # With each rss item, convert the published date to a timestamp and
                 # see if any links are newer than the db_feed_dt timestamp
