@@ -202,11 +202,11 @@ try:
                     output_str += "---------------------------------------------------"
                 # Output the feeds depending if user wants all feeds or not
                 if not clargs.all_feeds and has_new_items:
-                    print (output_str)
+                    print(output_str)
                 elif not clargs.all_feeds and not has_new_items:
                     pass
                 elif clargs.all_feeds:
-                    print (output_str)
+                    print(output_str)
 except OperationalError:
-    print ("No mysql server connection found. Exiting.")
+    print("No mysql server connection found. Exiting.")
     exit()
