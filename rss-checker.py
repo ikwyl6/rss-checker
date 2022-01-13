@@ -18,6 +18,7 @@ from Database import OperationalError
 # Database credentials
 dbc = "localhost", "DB-USER", "DB-PASS", "DB-NAME"
 db_feed_table = "feed"  # table that holds all feed urls
+db_group_table = "groups"
 item_dts = []  # empty datetime object to keep oldest dt for feed.updated
 output_str = ""
 
@@ -42,35 +43,54 @@ def link_html(item, comment=""):
 # COMMAND LINE ARGUMENTS
 clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss \
         feeds')
-clp.add_argument('-t', '--title', help='Add feed with title')
-clp.add_argument('-u', '--url', help='Add feed with url')
-clp.add_argument('-o', '--output', help='Output to file. Default is stdout')
-clp.add_argument('-n', '--no-update', action='store_true', help='Do not \
-        update db time stamp for feed. Like \'dry-run\'')
-clp.add_argument('-a', '--all-feeds', action='store_true', help='Show all \
+# Flags for ADDING FEEDS
+add_group = clp.add_argument_group('ADDING FEEDS')
+add_group.add_argument('-t', '--title', help='Add feed with title')
+add_group.add_argument('-u', '--url', help='Add feed with url')
+add_group.add_argument('--gid', help='Add feed in group gid. Use \
+        --list-groups to see list of groups')
+add_group.add_argument('--add-group', help='Name of group to add')
+# Flags for USING FEEDS
+use_group = clp.add_argument_group('CHECKING FEEDS')
+use_group.add_argument('-a', '--all-feeds', action='store_true', help='Show all \
         feeds in output even if they don\'t have any new rss items. Default \
         is not to show them')
-clp.add_argument('-g', '--group', action='store_true', help='Group feeds \
-        together')
-clp.add_argument('--list-groups', action='store_true', help='List all \
-        groups')
-clp.add_argument('-f', '--feed-id', help='Only use or check this feed id')
-clp.add_argument('-l', '--list', action='store_true', help='List all Feeds')
-clp.add_argument('-c', '--comments', action='store_true', help='Show link to \
+use_group.add_argument('-c', '--comments', action='store_true', help='Show link to \
         feed comments (if available)')
-clp.add_argument('--html', action='store_true', help='Output rss list in \
+use_group.add_argument('-f', '--feed-id', help='Only use or check this feed id')
+use_group.add_argument('-g', '--group', action='store_true', help='Group feeds \
+        together')
+use_group.add_argument('--html', action='store_true', help='Output rss list in \
         simple html')
-clp.add_argument('-v', '--verbose', action='store_true', help='Be verbose')
+use_group.add_argument('-l', '--list', action='store_true', help='List all Feeds')
+use_group.add_argument('--list-groups', action='store_true', help='List all \
+        groups')
+use_group.add_argument('-n', '--no-update', action='store_true', help='Do not \
+        update db time stamp for feed. Like \'dry-run\'')
+use_group.add_argument('-o', '--output', help='Output to file. Default is stdout')
+use_group.add_argument('-v', '--verbose', action='store_true', help='Be verbose')
 clargs = clp.parse_args()
 
 # If 'title' and 'url' then add the link to the db
 if (clargs.title and clargs.url) or (clargs.url):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    if (clargs.gid):
+        if (clargs.gid.isnumeric): gid = clargs.gid
+    else: gid = None
     try:
         with db(dbc, db_feed_table) as db_add:
-            db_add.add_feed(clargs.title, clargs.url, ts)
+            db_add.add_feed(gid, clargs.title, clargs.url, ts)
     except MySQLdb._exceptions.OperationalError:
         print ("No mysql server connection found. Exiting.")
+        sys.exit()
+    sys.exit()
+
+if (clargs.add_group):
+    try:
+        with db(dbc, db_group_table) as db_add:
+            db_add.add_group(clargs.add_group)
+    except MySQLdb._exceptions.OperationalError:
+        print("No mysql server connection found. Exiting.")
         sys.exit()
     sys.exit()
 

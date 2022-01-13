@@ -3,6 +3,7 @@
 import MySQLdb as mysql
 from MySQLdb import OperationalError
 
+
 class db:
 
     feed_table = ""
@@ -43,13 +44,26 @@ class db:
         return self.cursor.fetchall()
 
     # Add feed/link to feed_table
-    def add_feed(self,feed_title, feed_url, feed_ts):
+    def add_feed(self, gid, feed_title, feed_url, feed_ts):
         if (feed_title is None): feed_title = ""
         feed_title = feed_title.replace("'", "''")
-        sql ="INSERT INTO " + self.feed_table + " (title,url,updated) VALUES ('" + feed_title + "', '" + feed_url + "', '" + feed_ts + "')" 
+        sql ="INSERT INTO " + self.feed_table + \
+            " (title,url,updated) VALUES ('" + feed_title + "', '" + \
+            feed_url + "', '" + feed_ts + "')" 
+        if (gid):
+            sql ="INSERT INTO " + self.feed_table + \
+                " (group_id,title,url,updated) VALUES ('" + str(gid) + "', '" + \
+                feed_title + "', '" + feed_url + "', '" + feed_ts + "')" 
         self.cursor.execute(sql, )
         self.con.commit()
-    
+   
+    # Add group
+    def add_group(self, group_name):
+        group_name = group_name.replace("'", "''")
+        sql = "INSERT INTO groups (name) VALUES ('" + group_name + "')"
+        self.cursor.execute(sql, )
+        self.con.commit()
+
 #    def add_item(self,feed_id, item):
 #        sql = "INSERT INTO " + self.rss_table + " (feed_id, title, url, published) VALUES ('" \
 #                + str(feed_id) + "', '" + item[0] + "', '" + item[1] + "', '" + str(item[2]) + "');"
