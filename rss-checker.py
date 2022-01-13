@@ -56,6 +56,7 @@ clp.add_argument('-c', '--comments', action='store_true', help='Show link to \
         feed comments (if available)')
 clp.add_argument('--html', action='store_true', help='Output rss list in \
         simple html')
+clp.add_argument('-v', '--verbose', action='store_true', help='Be verbose')
 clargs = clp.parse_args()
 
 # If 'title' and 'url' then add the link to the db
@@ -109,8 +110,13 @@ try:
             has_new_items = False
             if clargs.list:
                 clargs.no_update = True
-                print("ID: " + str(db_feed_id) + " " + db_feed_title + " (" +
-                    str(db_feed_dt) + ")")
+                if clargs.verbose:
+                    print("ID: " + str(db_feed_id) + " " + db_feed_title +
+                            " (" + str(db_feed_dt) + ") " +
+                            db_feed_url)
+                else:
+                    print("ID: " + str(db_feed_id) + " " + db_feed_title +
+                            " (" + str(db_feed_dt) + ")")
             else:
                 if clargs.html:
                     output_str += db_feed_title + "<br>"
