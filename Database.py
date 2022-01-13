@@ -21,11 +21,19 @@ class db:
     def __exit__(self,type,value,trackback):
         self.cursor.connection.close()
 
+    # get all groups
+    def get_all_groups(self):
+        self.cursor.execute("SELECT * FROM groups;", )
+        return self.cursor.fetchall()
+
     # get all rss feeds from db
     def get_all_feeds(self, **kwargs):
         feed_id = kwargs.get('feed_id', None)
+        group = kwargs.get('group', None)
         if (feed_id): 
             sql = "SELECT * FROM " + self.feed_table + " WHERE id = '" + feed_id + "';"
+        elif (group):
+            sql = "SELECT * FROM " + self.feed_table + " ORDER BY group_id ASC;"
         else: sql = "SELECT * FROM " + self.feed_table + ";"
         self.cursor.execute(sql, )
         return self.cursor.fetchall()
