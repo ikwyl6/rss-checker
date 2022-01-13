@@ -50,6 +50,10 @@ clp.add_argument('-n', '--no-update', action='store_true', help='Do not \
 clp.add_argument('-a', '--all-feeds', action='store_true', help='Show all \
         feeds in output even if they don\'t have any new rss items. Default \
         is not to show them')
+clp.add_argument('-g', '--group', action='store_true', help='Group feeds \
+        together')
+clp.add_argument('--list-groups', action='store_true', help='List all \
+        groups')
 clp.add_argument('-f', '--feed-id', help='Only use or check this feed id')
 clp.add_argument('-l', '--list', action='store_true', help='List all Feeds')
 clp.add_argument('-c', '--comments', action='store_true', help='Show link to \
@@ -98,13 +102,22 @@ if clargs.html:
 # Connect to database and get all feeds
 try:
     with db(dbc, db_feed_table) as db:
+        if clargs.list_groups:
+            db_grouplist = db.get_all_groups()
+            for (db_group_id, db_group_name) in db_grouplist:
+                print("GID: " + str(db_group_id) + " " + db_group_name)
+            exit(0)
+
         if clargs.feed_id:
             db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
+        elif clargs.group:
+            db_feedlist = db.get_all_feeds(group=1)
+            show_groups = 1
         else:
             db_feedlist = db.get_all_feeds()
         # print (db_feedlist)
         # with each feed from db_feedlist list feeds or print the rss items
-        for (db_feed_id, db_feed_title, db_feed_url, 
+        for (db_feed_id, db_feed_group_id, db_feed_title, db_feed_url,
                 db_feed_comments, db_feed_dt) in db_feedlist:
             output_str = ""
             has_new_items = False
