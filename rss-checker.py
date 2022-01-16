@@ -94,6 +94,12 @@ if (clargs.add_group):
         sys.exit()
     sys.exit()
 
+if clargs.list_groups:
+    db_grouplist = db.get_all_groups()
+    for (db_group_id, db_group_name) in db_grouplist:
+        print("GID: " + str(db_group_id) + " " + db_group_name)
+    sys.exit(0)
+
 # If output cmdline option is a filename
 if clargs.output:
     try:
@@ -122,17 +128,11 @@ if clargs.html:
 # Connect to database and get all feeds
 try:
     with db(dbc, db_feed_table) as db:
-        if clargs.list_groups:
-            db_grouplist = db.get_all_groups()
-            for (db_group_id, db_group_name) in db_grouplist:
-                print("GID: " + str(db_group_id) + " " + db_group_name)
-            exit(0)
-
         if clargs.feed_id:
             db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
         elif clargs.group:
             db_feedlist = db.get_all_feeds(group=1)
-            show_groups = 1
+            #show_groups = 1
         else:
             db_feedlist = db.get_all_feeds()
         # print (db_feedlist)
