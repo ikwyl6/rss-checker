@@ -162,9 +162,10 @@ try:
                     response = requests.get(db_feed_url, timeout=1.0)
                     f = feedparser.parse(response.text) #db_feed_url)
                 except (URLError,
-                    requests.exceptions.ConnectionError,
-                    requests.exceptions.SSLError) as e:
-                    print(e)
+                        requests.exceptions.MissingSchema,
+                        requests.exceptions.ConnectionError,
+                        requests.exceptions.SSLError) as e:
+                    print(e, '\n')
                     continue
                 except requests.exceptions.Timeout as e:
                     print("Timeout from {0}. {1}".format(db_feed_url, e))
@@ -219,7 +220,7 @@ try:
                 if clargs.html:
                     output_str += "<hr>"
                 else:
-                    output_str += "---------------------------------------------------"
+                    output_str += "-------------------------------------------"
                 # Output the feeds depending if user wants all feeds or not
                 if not clargs.all_feeds and has_new_items:
                     print(output_str)
