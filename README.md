@@ -15,7 +15,7 @@ You can group your feeds together in groups so the feeds show in groups instead 
 Adding a feed:
   [-t | --title] TITLE: Add a feed title
   [-u | --url] LINK: Add a feed url/link
-  [--gid] Add feed in group gid. Use --list-groups to see list of groups
+  [--gid] When adding a feed using -u or -t above, put the feed in group 'gid'. Use --list-groups to see list of groups
   [--add-group GROUP_NAME] Name of group to add
   NOTE: You can add a feed with just a --url and no --title
 
