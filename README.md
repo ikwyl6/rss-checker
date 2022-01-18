@@ -8,22 +8,29 @@ The script does the following:
 You can add rss feeds to the script/db so you can track that feed for new rss links. 
 This would be good for a cronjob that you can run to email you the new articles in the rss feed.
 
+You can group your feeds together in groups so the feeds show in groups instead of how they were added.
+
 ### Command line options:
 ```
 Adding a feed:
   [-t | --title] TITLE: Add a feed title
   [-u | --url] LINK: Add a feed url/link
+  [--gid] Add feed in group gid. Use --list-groups to see list of groups
+  [--add-group GROUP_NAME] Name of group to add
   NOTE: You can add a feed with just a --url and no --title
 
 Running script:
   no options: Checks all rss feeds in db and sees if there are any new links added
-  [-o | --output] TMP_FILE: temporary file location to write to disk instead of stdout
-  [-n | --no-update]: Don't update the feed with a time stamp
   [-a | --all-feeds]: Show all feeds in output even if they don't have any new rss items.
-  [-f | --feed-id] FEED_ID: Only use or check this feed id
-  [-l | --list]: List all feeds
   [-c | --comments]: Provide link to rss item comments if available
-  --html: output html links within script output for clickable links for sending in an email
+  [-f | --feed-id] FEED_ID: Only use or check this feed id
+  [-g | --group]: Group feeds together
+  [--html]: output html links within script output for clickable links for sending in an email
+  [-l | --list]: List all feeds
+  [--list-groups]: List all group names and group_id
+  [-n | --no-update]: Don't update the feed with a time stamp
+  [-o | --output] TMP_FILE: temporary file location to write to disk instead of stdout
+  [-v | --verbose]: Be a little more verbose
 ```
 ### Database setup:
 Run as root under mysql: 
