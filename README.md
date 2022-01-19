@@ -39,17 +39,23 @@ CREATE USER rss_checker@localhost IDENTIFIED BY 'password';
 GRANT ALL ON rss_checker.* TO rss_checker@localhost;
 ```
 Logout as root from mysql and then run:
-```$ mysql -u rss_checker -p < rss-checker.sql```
+```$ mysql -u rss_checker -p < db.sql```
 
-### Initial Usage:
+### Initial Usage (to add a feed to the db):
 <code>$ rss-checker.py -t 'Feed title' -u 'https://link.to.my.feed.url'</code>
 
 ### Usage:
 <code>$ rss-checker.py</code> to check for any new rss items that are in the feed compared to the last update from the feed url. The default is to write to stdout.
+
+<code>$ rss-checker.py --add-group "Technology News Feeds"</code> Add a rss group
+
+</code>$ rss-checker.py --list-groups</code> List all rss groups in db
+
+<code>$ rss-checker.py -u 'https://link.to.my.feed.url' -t 'Hot News Feed' --gid 1</code> Add a rss feed and add to group gid=1
 
 <code>$ rss-checker.py --list</code> List all feeds with id
 
 <code>$ rss-checker.py --list -f3</code> List only feed with feed_id = 3
 
 ### Cron usage (example):
-<code>$ rss-checker.py -o /tmp/rss.txt; sed -i 's/$/<br>/' && mutt -e 'set content_type=text/html' -s "test rss-checker output " EMAIL_ADD < /tmp/rss.txt
+<code>$ rss-checker.py -o /tmp/rss.txt; sed -i 's/$/<br>/' && mutt -e 'set content_type=text/html' -s "test rss-checker output " EMAIL_ADD < /tmp/rss.txt</code>
