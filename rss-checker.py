@@ -81,6 +81,7 @@ use_group.add_argument('-a', '--all-feeds', action='store_true', help='Show all 
         is not to show them')
 use_group.add_argument('-c', '--comments', action='store_true', help='Show link to \
         feed comments (if available)')
+use_group.add_argument('--delete-feed', help='Delete feed using \'FEED_ID\'')
 use_group.add_argument('-f', '--feed-id', help='Only use or check this feed id')
 use_group.add_argument('-g', '--group', action='store_true', help='Group feeds \
         together. If used with --list, show feeds with group ids')
@@ -130,6 +131,15 @@ if (clargs.add_group):
             db_add.add_group(clargs.add_group)
     except MySQLdb._exceptions.OperationalError:
         print("No mysql server connection found. Exiting.")
+        sys.exit()
+    sys.exit()
+
+if (clargs.delete_feed):
+    try:
+        with db(dbc, db_feed_table) as db_remove:
+            db_remove.remove_feed(clargs.delete_feed)
+    except MySQLdb._exceptions.OperationalError:
+        print("Error with feed id removal. Exiting")
         sys.exit()
     sys.exit()
 
