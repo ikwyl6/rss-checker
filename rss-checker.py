@@ -14,13 +14,17 @@ import requests
 from urllib.error import URLError
 from Database import db
 from Database import OperationalError
+import json
+import os
 
 # Database credentials
 dbc = "localhost", "DB-USER", "DB-PASS", "DB-NAME"
 db_feed_table = "feed"  # table that holds all feed urls
-db_group_table = "groups"
+db_group_table = "groups"  # table that holds groups
+config_file = os.getenv('HOME') + "/.rss_checker.json"
+return_website = ('', os.getenv('RC_WEBSITE'))[os.getenv('RC_WEBSITE') != '']
 item_dts = []  # empty datetime object to keep oldest dt for feed.updated
-output_str = ""
+output_str = "" # used for most output to stdout/file/html
 
 
 def link_html(item, comment=""):
@@ -40,6 +44,25 @@ def link_html(item, comment=""):
         return "- <a href=\""+item[0]+"\">"+item[1]+"</a><br>"
 
 
+# Get json options from config file items for clargs
+def get_json_config(jsonfile=config_file):
+    with open(jsonfile) as jf:
+        data = json.load(jf)
+    jf.close()
+    return data
+
+
+# Form the proxy info for requests Session
+def get_proxy_info(**cl_kwargs):
+    scheme = cl_kwargs['proxy-scheme']
+    user = cl_kwargs['proxy-user']
+    pw = cl_kwargs['proxy-pass']
+    host = cl_kwargs['proxy-host']
+    conn = cl_kwargs['proxy-conn']
+    proxy = { conn : ''.join([scheme, "://", user, ":", pw, "@", host]) }
+    return proxy
+
+
 # COMMAND LINE ARGUMENTS
 clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss \
         feeds')
@@ -47,9 +70,10 @@ clp = argparse.ArgumentParser(prog='rss-checker', description='check your rss \
 add_group = clp.add_argument_group('ADDING FEEDS')
 add_group.add_argument('-t', '--title', help='Add feed with title')
 add_group.add_argument('-u', '--url', help='Add feed with url')
-add_group.add_argument('--gid', help='Add feed in group gid. Use \
-        --list-groups to see list of groups')
-add_group.add_argument('--add-group', help='Name of group to add')
+add_group.add_argument('--gid', type=int, help='Add feed under group gid \
+        (integer). Use --list-groups to see list of groups')
+add_group.add_argument('--add-group', help='Name of group to add. Use groups \
+        to group your feeds together')
 # Flags for USING FEEDS
 use_group = clp.add_argument_group('CHECKING FEEDS')
 use_group.add_argument('-a', '--all-feeds', action='store_true', help='Show all \
@@ -59,32 +83,47 @@ use_group.add_argument('-c', '--comments', action='store_true', help='Show link 
         feed comments (if available)')
 use_group.add_argument('-f', '--feed-id', help='Only use or check this feed id')
 use_group.add_argument('-g', '--group', action='store_true', help='Group feeds \
-        together')
+        together. If used with --list, show feeds with group ids')
 use_group.add_argument('--html', action='store_true', help='Output rss list in \
         simple html')
 use_group.add_argument('-l', '--list', action='store_true', help='List all Feeds')
 use_group.add_argument('--list-groups', action='store_true', help='List all \
         groups')
 use_group.add_argument('-n', '--no-update', action='store_true', help='Do not \
-        update db time stamp for feed. Like \'dry-run\'')
+        update db time stamp for each feed. Like \'dry-run\'')
 use_group.add_argument('-o', '--output', help='Output to file. Default is stdout')
 use_group.add_argument('-v', '--verbose', action='store_true', help='Be verbose')
+use_group.add_argument('-w', '--website', dest='website' )
+# Flags for using SOCKS5 PROXY
+proxy_group = clp.add_argument_group("SOCKS PROXY")
+proxy_group.add_argument('--proxy-user', dest='proxy_user', help='proxy user')
+proxy_group.add_argument('--proxy-pass', dest='proxy_pass', help='proxy password')
+proxy_group.add_argument('--proxy-host', dest='proxy_host', help='host or IP \
+        with :port')
+proxy_group.add_argument('--proxy-scheme', dest='proxy_scheme', help='Can be \
+        \'socks5\' or \'sock5h\' (See python requests documentation for more \
+        information')
+proxy_group.add_argument('--proxy-conn', dest='proxy_conn', help='\'http\' or \
+        \'https\'')
+# Get config options from config file and load in defaults
+jc_kwargs = get_json_config()
+proxy_group.set_defaults(**jc_kwargs)
 clargs = clp.parse_args()
 
 # If 'title' and 'url' then add the link to the db
 if (clargs.title and clargs.url) or (clargs.url):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    if (clargs.gid):
-        if (clargs.gid.isnumeric): gid = clargs.gid
+    if (clargs.gid): gid = clargs.gid
     else: gid = None
     try:
         with db(dbc, db_feed_table) as db_add:
             db_add.add_feed(gid, clargs.title, clargs.url, ts)
     except MySQLdb._exceptions.OperationalError:
-        print ("No mysql server connection found. Exiting.")
+        print("No mysql server connection found. Exiting.")
         sys.exit()
     sys.exit()
 
+# if user is adding a group to 'groups' table in mysql
 if (clargs.add_group):
     try:
         with db(dbc, db_group_table) as db_add:
@@ -95,9 +134,13 @@ if (clargs.add_group):
     sys.exit()
 
 if clargs.list_groups:
-    db_grouplist = db.get_all_groups()
-    for (db_group_id, db_group_name) in db_grouplist:
-        print("GID: " + str(db_group_id) + " " + db_group_name)
+    try:
+        with db(dbc, db_group_table) as db_list:
+            db_grouplist = db_list.get_all_groups()
+        for (db_group_id, db_group_name) in db_grouplist:
+            print("GID: " + str(db_group_id) + " " + db_group_name)
+    except MySQLdb._exceptions.OperationalError:
+        print(e)
     sys.exit(0)
 
 # If output cmdline option is a filename
@@ -110,20 +153,20 @@ if clargs.output:
 
 # Create the html header for font size etc if --html used
 if clargs.html:
-    print("<?php\n" +
-          "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: \
-                  http://ikwyl6.com/rss-checker/');}\n" +
-          "echo \"<table width=100%><tr><td align=right>" +
-          "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
-
-    print("<html><head>\
-           <link rel=\"shortcut icon\" type=\"image/png\" href=\"favicon.png\">\
+    print("<!DOCTYPE html><html><head>\
+           <link rel=\"shortcut icon\" type=\"image/png\" \
+            href=\"favicon.png\">\
             <style>\
             body { -webkit-text-size-adjust: 300%; }\
             p { font-family: Arial, Helvetica, sans-serif; fone-size: small; }\
             a { text-decoration: none; }\
             a:hover { text-decoration: underline; }\
         </style></head>")
+    print("<?php\n" +
+          "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: " +
+          str(clargs.website) + "');}\n" +
+          "echo \"<table width=100%><tr><td align=right>" +
+          "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
 
 # Connect to database and get all feeds
 try:
@@ -133,34 +176,48 @@ try:
         elif clargs.group:
             db_feedlist = db.get_all_feeds(group=1)
             #show_groups = 1
+        # Assuming '-a' here for all items even if not specified
         else:
             db_feedlist = db.get_all_feeds()
         # print (db_feedlist)
+        # If listing all feeds from db then don't need a session
+        if not clargs.list:
+            session = requests.Session()
+            session.proxies.update(get_proxy_info(**jc_kwargs))
+ 
         # with each feed from db_feedlist list feeds or print the rss items
         for (db_feed_id, db_feed_group_id, db_feed_title, db_feed_url,
                 db_feed_comments, db_feed_dt) in db_feedlist:
             output_str = ""
+            list_str = ""
             has_new_items = False
             if clargs.list:
                 clargs.no_update = True
+                if clargs.group:
+                    list_str = "GID: " + str(db_feed_group_id) + ", "
                 if clargs.verbose:
-                    print("ID: " + str(db_feed_id) + " " + db_feed_title +
-                            " (" + str(db_feed_dt) + ") " +
-                            db_feed_url)
+                    list_str += "ID: " + str(db_feed_id) + " " + \
+                            db_feed_title + \
+                            " (" + str(db_feed_dt) + ") " + \
+                            db_feed_url
                 else:
-                    print("ID: " + str(db_feed_id) + " " + db_feed_title +
-                            " (" + str(db_feed_dt) + ")")
+                    list_str += "ID: " + str(db_feed_id) + " " + \
+                            db_feed_title + " (" + str(db_feed_dt) + ")"
+                print(list_str)
             else:
                 if clargs.html:
                     output_str += db_feed_title + "<br>"
-                    # print(db_feed_title + "<br>")
+                    if clargs.verbose:
+                        print(db_feed_title + "<br>")
                 else:
                     output_str += db_feed_title + "\n"
-                    # print(db_feed_title)
+                    if clargs.verbose:
+                        print(db_feed_title)
                 item_dts.clear()
                 try:
-                    response = requests.get(db_feed_url, timeout=1.0)
-                    f = feedparser.parse(response.text) #db_feed_url)
+                    # response = requests.get(db_feed_url, timeout=5.0)
+                    response = session.get(db_feed_url, timeout=15.0)
+                    f = feedparser.parse(response.text)  # db_feed_url)
                 except (URLError,
                         requests.exceptions.MissingSchema,
                         requests.exceptions.ConnectionError,
@@ -170,8 +227,8 @@ try:
                 except requests.exceptions.Timeout as e:
                     print("Timeout from {0}. {1}".format(db_feed_url, e))
                     continue
-                # With each rss item, convert the published date to a timestamp and
-                # see if any links are newer than the db_feed_dt timestamp
+                # With each rss item, convert the published date to a timestamp
+                # and see if any links are newer than the db_feed_dt timestamp
                 for item in f.entries:
                     # See issue# 151 https://github.com/kurtmckee/feedparser/issues/151
                     try:
@@ -228,6 +285,7 @@ try:
                     pass
                 elif clargs.all_feeds:
                     print(output_str)
+        if not clargs.list: session.close()
 except OperationalError:
     print("No mysql server connection found. Exiting.")
     exit()
