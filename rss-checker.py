@@ -232,18 +232,38 @@ try:
                         requests.exceptions.MissingSchema,
                         requests.exceptions.ConnectionError,
                         requests.exceptions.SSLError) as e:
-                    print(e, '\n')
+                    if clargs.html:
+                        excep_str = "Exception: (id: " + \
+                                str(db_feed_id) + " - " + \
+                                db_feed_url + "): " + \
+                                str(e) + '<br>'
+                    else:
+                        excep_str = "Exception: (id: " + \
+                                str(db_feed_id) + " - " + \
+                                db_feed_url + "): " + \
+                                str(e) + '\n'
+                    #print("Exception: (" + db_feed_url + "): " + str(e) + '\n')
+                    print(excep_str)
                     continue
                 except requests.exceptions.Timeout as e:
-                    print("Timeout from {0}. {1}".format(db_feed_url, e))
+                    print("Timeout from {0}. {1}\n".format(db_feed_url, e))
                     continue
                 # With each rss item, convert the published date to a timestamp
                 # and see if any links are newer than the db_feed_dt timestamp
                 for item in f.entries:
                     # See issue# 151 https://github.com/kurtmckee/feedparser/issues/151
+                    if item.updated_parsed == "":
+                        print("item.updated_parsed is empty. db_feed_id: " + db_feed_id)
                     try:
                         item_dt = datetime.datetime.fromtimestamp(mktime(item.updated_parsed))
-                    except (KeyError, AttributeError, OverflowError):
+                    except (TypeError,
+                            KeyError,
+                            AttributeError,
+                            OverflowError,
+                            ValueError) as e:
+                        print("Exception: " + str(e) + "\n" + "db_feed_id: " + str(db_feed_id))
+                        print("item.updated_parsed: " + \
+                                str(item.updated_parsed) + "\n")
                         item_dt = datetime.datetime.fromtimestamp(time.time())
                     # If the rss item timestamp is greater than the feed timestamp in db
                     # Add that item timestamp to the item_dts list to sort later
