@@ -24,7 +24,7 @@ db_group_table = "groups"  # table that holds groups
 config_file = os.getenv('HOME') + "/.rss_checker.json"
 return_website = ('', os.getenv('RC_WEBSITE'))[os.getenv('RC_WEBSITE') != '']
 item_dts = []  # empty datetime object to keep oldest dt for feed.updated
-output_str = "" # used for most output to stdout/file/html
+output_str = ""  # used for most output to stdout/file/html
 
 
 def link_html(item, comment=""):
@@ -59,7 +59,7 @@ def get_proxy_info(**cl_kwargs):
     pw = cl_kwargs['proxy-pass']
     host = cl_kwargs['proxy-host']
     conn = cl_kwargs['proxy-conn']
-    proxy = { conn : ''.join([scheme, "://", user, ":", pw, "@", host]) }
+    proxy = {conn: ''.join([scheme, "://", user, ":", pw, "@", host])}
     return proxy
 
 
@@ -76,9 +76,9 @@ add_group.add_argument('--add-group', help='Name of group to add. Use groups \
         to group your feeds together')
 # Flags for USING FEEDS
 use_group = clp.add_argument_group('CHECKING FEEDS')
-use_group.add_argument('-a', '--all-feeds', action='store_true', help='Show all \
-        feeds in output even if they don\'t have any new rss items. Default \
-        is not to show them')
+use_group.add_argument('-a', '--all-feeds', action='store_true',
+        help='Show all feeds in output even if they don\'t have any new rss \
+        items. Default is not to show them')
 use_group.add_argument('-c', '--comments', action='store_true', help='Show link to \
         feed comments (if available)')
 use_group.add_argument('--delete-feed', help='Delete feed using \'FEED_ID\'')
@@ -185,7 +185,7 @@ try:
             db_feedlist = db.get_all_feeds(feed_id=clargs.feed_id)
         elif clargs.group:
             db_feedlist = db.get_all_feeds(group=1)
-            #show_groups = 1
+            # show_groups = 1
         # Assuming '-a' here for all items even if not specified
         else:
             db_feedlist = db.get_all_feeds()
@@ -242,7 +242,7 @@ try:
                                 str(db_feed_id) + " - " + \
                                 db_feed_url + "): " + \
                                 str(e) + '\n'
-                    #print("Exception: (" + db_feed_url + "): " + str(e) + '\n')
+                    # print("Exception: (" + db_feed_url + "): " + str(e) + '\n')
                     print(excep_str)
                     continue
                 except requests.exceptions.Timeout as e:
@@ -269,16 +269,19 @@ try:
                     # Add that item timestamp to the item_dts list to sort later
                     if item_dt > db_feed_dt:
                         has_new_items = True
-                        # TODO: do try/except over the item.link as sometimes it
-                        #       is not always present (KeyError)
+                        # TODO: do try/except over the item.link as sometimes
+                        # it is not always present (KeyError)
                         if clargs.html:
                             if clargs.comments:
                                 try:
-                                    output_str += link_html((item.link, item.title, item_dt), item.comments)
+                                    output_str += link_html((item.link,
+                                        item.title, item_dt), item.comments)
                                 except AttributeError:
-                                    output_str += link_html((item.link, item.title, item_dt))
+                                    output_str += link_html((item.link,
+                                        item.title, item_dt))
                             else:
-                                output_str += link_html((item.link, item.title, item_dt))
+                                output_str += link_html((item.link, item.title,
+                                    item_dt))
                         else:
                             if clargs.comments:
                                 try:
