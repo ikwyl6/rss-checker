@@ -194,7 +194,6 @@ try:
         if not clargs.list:
             session = requests.Session()
             session.proxies.update(get_proxy_info(**jc_kwargs))
- 
         # with each feed from db_feedlist list feeds or print the rss items
         for (db_feed_id, db_feed_group_id, db_feed_title, db_feed_url,
                 db_feed_comments, db_feed_dt) in db_feedlist:
@@ -242,7 +241,6 @@ try:
                                 str(db_feed_id) + " - " + \
                                 db_feed_url + "): " + \
                                 str(e) + '\n'
-                    # print("Exception: (" + db_feed_url + "): " + str(e) + '\n')
                     print(excep_str)
                     continue
                 except requests.exceptions.Timeout as e:
@@ -262,8 +260,8 @@ try:
                             OverflowError,
                             ValueError) as e:
                         print("Exception: " + str(e) + "\n" + "db_feed_id: " + str(db_feed_id))
-                        print("item.updated_parsed: " + \
-                                str(item.updated_parsed) + "\n")
+                        print("item.updated_parsed: " +
+                            str(item.updated_parsed) + "\n")
                         item_dt = datetime.datetime.fromtimestamp(time.time())
                     # If the rss item timestamp is greater than the feed timestamp in db
                     # Add that item timestamp to the item_dts list to sort later
