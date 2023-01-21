@@ -149,7 +149,7 @@ if clargs.list_groups:
             db_grouplist = db_list.get_all_groups()
         for (db_group_id, db_group_name) in db_grouplist:
             print("GID: " + str(db_group_id) + " " + db_group_name)
-    except MySQLdb._exceptions.OperationalError:
+    except MySQLdb._exceptions.OperationalError as e:
         print(e)
     sys.exit(0)
 
