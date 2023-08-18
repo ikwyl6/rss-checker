@@ -111,7 +111,7 @@ jc_kwargs = get_json_config()
 proxy_group.set_defaults(**jc_kwargs)
 clargs = clp.parse_args()
 
-# If 'title' and 'url' then add the link to the db
+# If 'title' and 'url' then add the link to the db and exit
 if (clargs.title and clargs.url) or (clargs.url):
     ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if (clargs.gid): gid = clargs.gid
@@ -134,6 +134,7 @@ if (clargs.add_group):
         sys.exit()
     sys.exit()
 
+# Delete a particular feed in db and exit
 if (clargs.delete_feed):
     try:
         with db(dbc, db_feed_table) as db_remove:
@@ -143,6 +144,7 @@ if (clargs.delete_feed):
         sys.exit()
     sys.exit()
 
+# List available groups in db and exit
 if clargs.list_groups:
     try:
         with db(dbc, db_group_table) as db_list:
@@ -157,6 +159,7 @@ if clargs.list_groups:
 if clargs.output:
     try:
         sys.stdout = open(clargs.output, "w")
+    # TODO Add more exceptions here (permissions, etc)
     except FileNotFoundError:
         print("No such file or directory'" + clargs.output + "'. Exiting")
         exit()
@@ -168,14 +171,14 @@ if clargs.html:
             href=\"favicon.png\">\
             <style>\
             body { -webkit-text-size-adjust: 300%; }\
-            p { font-family: Arial, Helvetica, sans-serif; fone-size: small; }\
+            p { font-family: Arial, Helvetica, sans-serif; font-size: medium; }\
             a { text-decoration: none; }\
             a:hover { text-decoration: underline; }\
         </style></head>")
     print("<?php\n" +
           "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: " +
           str(clargs.website) + "');}\n" +
-          "echo \"<table width=100%><tr><td align=right>" +
+          "echo \"<table width=100%><tr><td align=left>" +
           "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
 
 # Connect to database and get all feeds
