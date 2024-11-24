@@ -1,2 +1,2 @@
-feedparser>=5.2.1
+feedparser>=6.0.11
 mysqlclient>=1.4.5
