@@ -3,9 +3,9 @@ Python script that uses feedparser and mysql/maria db to show only new rss feeds
 
 The script does the following:
 - Keeps a mysql/maria db of the feeds that you want to track.
-- The mysql feed.updated field keeps the latest rss item 'published' date that the script last checked. So unless there are new items added to the feed, it will not show you any new items. The script doesn't keep an rss list of items as there is no need to because of comparing the feed.updated datetime field against the rss item 'published' date. 
+- The mysql feed.updated field keeps the latest rss item 'published' date that the script last checked. So unless there are new items added to the feed, it will not show you any new items. The script doesn't keep an rss list of items as there is no need to because of comparing the feed.updated datetime field against the rss item 'published' date.
 
-You can add rss feeds to the script/db so you can track that feed for new rss links. 
+You can add rss feeds to the script/db so you can track that feed for new rss links.
 This would be good for a cronjob that you can run to email you the new articles in the rss feed.
 
 You can group your feeds together in groups so the feeds show in groups instead of how they were added.
@@ -15,7 +15,7 @@ You can group your feeds together in groups so the feeds show in groups instead 
 Adding a feed:
   [-t | --title] TITLE: Add a feed title
   [-u | --url] LINK: Add a feed url/link
-  [--gid] When adding a feed using -u or -t above, put the feed in group 'gid'. 
+  [--gid] When adding a feed using -u or -t above, put the feed in group 'gid'.
   Use --list-groups to see list of groups
   [--add-group GROUP_NAME] Name of group to add
   NOTE: You can add a feed with just a --url and no --title
@@ -34,7 +34,7 @@ Running script:
   [-v | --verbose]: Be a little more verbose
 ```
 ### Database setup:
-Run as root under mysql: 
+Run as root under mysql:
 ```
 CREATE USER rss_checker@localhost IDENTIFIED BY 'password';
 GRANT ALL ON rss_checker.* TO rss_checker@localhost;
