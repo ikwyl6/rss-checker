@@ -106,29 +106,44 @@ add_group.add_argument('-t', '--title', help='Add feed with title')
 add_group.add_argument('-u', '--url', help='Add feed with url')
 add_group.add_argument('--gid', type=int, help='Add feed under group gid \
         (integer). Use --list-groups to see list of groups')
-add_group.add_argument('--add-group', help='Name of group to add. Use groups \
-        to group your feeds together')
+add_group.add_argument('--add-group', help='Name of group in quotes to add. \
+                       Use \'--group\' to group your feeds together')
 # Flags for USING FEEDS
 use_group = clp.add_argument_group('CHECKING FEEDS')
 use_group.add_argument('-a', '--all-feeds', action='store_true',
-        help='Show all feeds in output even if they don\'t have any new rss \
-        items. Default is not to show them')
-use_group.add_argument('-c', '--comments', action='store_true', help='Show link to \
-        feed comments (if available)')
+                       help='Show all feeds in output even if they don\'t \
+                            have any new rss items. Default is not to \
+                            show them')
+use_group.add_argument('-c', '--comments', action='store_true',
+                       help='Show link to feed comments (if available)')
 use_group.add_argument('--delete-feed', help='Delete feed using \'FEED_ID\'')
-use_group.add_argument('-f', '--feed-id', help='Only use or check this feed id')
-use_group.add_argument('-g', '--group', action='store_true', help='Group feeds \
-        together. If used with --list, show feeds with group ids')
-use_group.add_argument('--html', action='store_true', help='Output rss list in \
-        simple html')
-use_group.add_argument('-l', '--list', action='store_true', help='List all Feeds')
-use_group.add_argument('--list-groups', action='store_true', help='List all \
-        groups')
-use_group.add_argument('-n', '--no-update', action='store_true', help='Do not \
-        update db time stamp for each feed. Like \'dry-run\'')
-use_group.add_argument('-o', '--output', help='Output to file. Default is stdout')
-use_group.add_argument('-v', '--verbose', action='store_true', help='Be verbose')
-use_group.add_argument('-w', '--website', dest='website' )
+# TODO Add option where --feed-id can be a range of numbers instead of
+# just one number: https://docs.python.org/3/library/argparse.html#choices
+# This could be used for getting certain feeds instead of all of them or one
+# of them
+use_group.add_argument('-f', '--feed-id',
+                       help='Only use or check this feed id')
+use_group.add_argument('-g', '--group', action='store_true',
+                       help='Group feeds together. If used \
+                            with --list, show feeds with group ids')
+use_group.add_argument('--html', action='store_true',
+                       help='Output rss list in simple html')
+use_group.add_argument('-l', '--list', action='store_true',
+                       help='List all Feeds')
+use_group.add_argument('--list-groups', action='store_true',
+                       help='List all groups')
+use_group.add_argument('-n', '--no-update', action='store_true',
+                       help='Do not update db time stamp for each feed. \
+                            Like \'dry-run\'')
+# TODO
+# use_group.add_argument('-nnp', '--not-new-page', action='store_true', \
+#                       help='With html output, don't have link open in new \
+#                       tab/page')
+use_group.add_argument('-o', '--output',
+                       help='Output to file. Default is stdout')
+use_group.add_argument('-v', '--verbose', action='store_true',
+                       help='Be verbose')
+use_group.add_argument('-w', '--website', dest='website')
 # Flags for using SOCKS5 PROXY
 proxy_group = clp.add_argument_group("SOCKS PROXY")
 proxy_group.add_argument('--proxy-user', dest='proxy_user', help='proxy user')
