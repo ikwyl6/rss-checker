@@ -45,6 +45,16 @@ def html_header(website):
 
 
 def link_html(item, comment=""):
+    """
+    Create a single line of html for an rss item that is passed to fuunction
+    item comprises of:
+        item[0] = item.link (http/https link)
+        item[1] = item.title (text)
+        item[2] = item.dt (datestamp)
+    comment is a http/https link
+    """
+    link = item[0]
+    title = item[1]
     timestamp = item[2]
     # format for what is/not given
     if timestamp != "" and not comment:
@@ -59,7 +69,14 @@ def link_html(item, comment=""):
             "<a href=\""+comment+"\">Comments</a><br>"
     else:
         return "- <a href=\""+item[0]+"\">"+item[1]+"</a><br>"
-
+    # Part of TODO to add links to open in new tab/page and also to
+    # clean up the messy strings above
+    # start_str = "- <a href=\"" + link + \""
+    # newtab_str = "target=\"_blank\" rel=\"noopener noreferrer\""
+    # link_str = "..."
+    # comment_str = "...."
+    # end_str = "</a><br>"
+    # ret_str = start + link_str + comment_str + end_str
 
 # Get json options from config file items for clargs
 def get_json_config(jsonfile=config_file):
