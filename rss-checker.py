@@ -27,6 +27,23 @@ item_dts = []  # empty datetime object to keep oldest dt for feed.updated
 output_str = ""  # used for most output to stdout/file/html
 
 
+def html_header(website):
+    print("<!DOCTYPE html><html><head>\
+           <link rel=\"shortcut icon\" type=\"image/png\" \
+            href=\"favicon.png\">\
+            <style>\
+            body { -webkit-text-size-adjust: 300%; }\
+            p { font-family: Arial, Helvetica, sans-serif; font-size: x-large; }\
+            a { text-decoration: none; }\
+            a:hover { text-decoration: underline; }\
+        </style></head>")
+    print("<?php\n" +
+          "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: " +
+          str(website) + "');}\n" +
+          "echo \"<table width=100%><tr><td align=left>" +
+          "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
+
+
 def link_html(item, comment=""):
     timestamp = item[2]
     # format for what is/not given
@@ -166,20 +183,7 @@ if clargs.output:
 
 # Create the html header for font size etc if --html used
 if clargs.html:
-    print("<!DOCTYPE html><html><head>\
-           <link rel=\"shortcut icon\" type=\"image/png\" \
-            href=\"favicon.png\">\
-            <style>\
-            body { -webkit-text-size-adjust: 300%; }\
-            p { font-family: Arial, Helvetica, sans-serif; font-size: medium; }\
-            a { text-decoration: none; }\
-            a:hover { text-decoration: underline; }\
-        </style></head>")
-    print("<?php\n" +
-          "if ($_GET['delete'] == 1) {unlink(__FILE__);header('Location: " +
-          str(clargs.website) + "');}\n" +
-          "echo \"<table width=100%><tr><td align=left>" +
-          "<a href='?delete=1'>delete?</a></td></tr></table>\"; ?>")
+    html_header(clargs.website)
 
 # Connect to database and get all feeds
 try:
@@ -320,6 +324,9 @@ try:
                 elif clargs.all_feeds:
                     print(output_str)
         if not clargs.list: session.close()
+        # At end of for loop so add the footer html if --html used
+        if clargs.html:
+            print("</html>")
 except OperationalError:
     print("No mysql server connection found. Exiting.")
     exit()
