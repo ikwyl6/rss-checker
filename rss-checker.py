@@ -255,12 +255,8 @@ try:
             else:
                 if clargs.html:
                     output_str += db_feed_title + "<br>"
-                    if clargs.verbose:
-                        print(db_feed_title + "<br>")
                 else:
                     output_str += db_feed_title + "\n"
-                    if clargs.verbose:
-                        print(db_feed_title)
                 item_dts.clear()
                 try:
                     # response = requests.get(db_feed_url, timeout=5.0)
